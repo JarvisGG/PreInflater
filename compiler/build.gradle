@@ -1,0 +1,13 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation 'com.hendraanggrian:r-parser:0.2'
+
+    implementation project(':annotation')
+}
+
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'

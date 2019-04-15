@@ -1,0 +1,17 @@
+apply plugin: 'groovy'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    compile gradleApi()//gradle sdk
+    compile localGroovy()//groovy sdk
+    implementation 'com.android.tools.build:gradle:3.3.2'
+    implementation 'org.ow2.asm:asm-all:5.1'
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+repositories {
+    google()
+    jcenter()
+}
