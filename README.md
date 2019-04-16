@@ -29,9 +29,9 @@ repositories {
 }
 
 dependencies {
-    api 'com.github.JarvisGG.PreInflater:annotation:1.0-SNAPSHORT'
-    annotationProcessor 'com.github.JarvisGG.PreInflater:compiler:1.0-SNAPSHORT'
-    api 'com.github.JarvisGG.PreInflater:library:1.0-SNAPSHORT'
+    api 'com.github.JarvisGG.PreInflater:annotation:1.0.1-SNAPSHORT'
+    annotationProcessor 'com.github.JarvisGG.PreInflater:compiler:1.0.1-SNAPSHORT'
+    api 'com.github.JarvisGG.PreInflater:library:1.0.1-SNAPSHORT'
 }
 
 ```
