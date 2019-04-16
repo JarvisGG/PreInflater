@@ -61,17 +61,19 @@ public enum PreInflaterManager {
      */
     public void executePreInflater(Context context) {
 
+        AsyncWrapperLayoutInflater inflater = AsyncWrapperLayoutInflater.getInstance(context);
+
         Completable.fromRunnable(() -> StreamSupport
                 .stream(sPreInflateInfoOnMain)
                 .distinct()
-                .forEach(res -> AsyncWrapperLayoutInflater.getInstance(context).preInflater(res)))
+                .forEach(res -> inflater.preInflater(res)))
                 .subscribeOn(MAINParams.second)
                 .subscribe();
 
         Completable.fromRunnable(() -> StreamSupport
                 .stream(sPreInflateInfoOnIo)
                 .distinct()
-                .forEach(res -> AsyncWrapperLayoutInflater.getInstance(context).preInflater(res)))
+                .forEach(inflater::preInflater))
                 .subscribeOn(IOParams.second)
                 .subscribe();
     }
@@ -82,7 +84,5 @@ public enum PreInflaterManager {
         } else if (MAINParams.first.equals(info.scheduler)) {
             sPreInflateInfoOnMain.add(info.layout);
         }
-        Log.e("addInflateInfo ----> ",  "Layout : " + info.layout);
-        Log.e("addInflateInfo ----> ",  "scheduler : " + info.scheduler);
     }
 }

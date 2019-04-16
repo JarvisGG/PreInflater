@@ -34,7 +34,6 @@ class PreInflaterMethodVisitor extends AdviceAdapter {
     @Override
     protected void onMethodEnter() {
         for (String inflater : inflaters) {
-            System.out.println("onMethodEnter name --------------------> " + name)
 
             mv.visitMethodInsn(INVOKESTATIC, inflater, "inject", "()V", false)
 
