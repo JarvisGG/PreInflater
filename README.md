@@ -7,6 +7,13 @@ Step 1:
 ``` Gradle
 
 buildscript {
+
+    repositories {
+        ```
+        maven { url 'https://jitpack.io' }
+        ```
+    }
+        
     dependencies {
         ```
         classpath 'com.github.JarvisGG.PreInflater:buildSrc:1.0-SNAPSHORT'
