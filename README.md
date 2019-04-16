@@ -9,19 +9,22 @@ Step 1:
 buildscript {
     repositories {
         // ...
+        jcenter()
         maven { url 'https://jitpack.io' }
     }
         
     dependencies {
         // ...
         classpath 'com.github.JarvisGG.PreInflater:buildSrc:1.0-SNAPSHORT'
+        classpath "com.jakewharton:butterknife-gradle-plugin:9.0.0"
     }
 }
 
-apply plugin: 'preinflater-plugin'
 ```
 Step2:
 ``` Gradle
+apply plugin: 'preinflater-plugin'
+apply plugin: 'com.jakewharton.butterknife'
 
 repositories {
     // ...
@@ -31,6 +34,7 @@ repositories {
 dependencies {
     api 'com.github.JarvisGG.PreInflater:annotation:1.0.1-SNAPSHORT'
     annotationProcessor 'com.github.JarvisGG.PreInflater:compiler:1.0.1-SNAPSHORT'
+    
     api 'com.github.JarvisGG.PreInflater:library:1.0.1-SNAPSHORT'
 }
 
