@@ -8,3 +8,8 @@
 .externalNativeBuild
 .project
 .settings/*
+*/bin/*
+*/.classpath
+*/.settings/*
+
+
