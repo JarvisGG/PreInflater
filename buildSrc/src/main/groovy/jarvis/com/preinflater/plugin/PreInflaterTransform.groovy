@@ -12,9 +12,11 @@ import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableSet
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
+import jarvis.com.preinflater.plugin.asm.AnnotationClassVisitor
 import jarvis.com.preinflater.plugin.asm.PreInflaterClassVisitor
 import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 
 import java.nio.file.Path
@@ -79,25 +81,24 @@ class PreInflaterTransform extends Transform {
         return false
     }
 
-    private static String collectClassPatch(String path) {
+    def collectClassPatch = { path ->
         String classPath = path.substring(0, path.length() - '.class'.length())
         if (isPreInflater(classPath)) {
             inflaters.add(classPath)
         }
-        return classPath
+        classPath
     }
 
-    private static boolean isPreInflater(String className) {
-        return className.endsWith('$R2InflaterMapper')
+    def isPreInflater = { className ->
+        className.endsWith('$R2InflaterMapper')
     }
 
-    private static String getClassNameFromFile(Path dirPath, Path classPath) {
-        final String p = dirPath.relativize(classPath).toString()
-        return collectClassPatch(p)
+    def getR2PreInflaterMapperFromFile = { Path dirPath, Path classPath ->
+        collectClassPatch(dirPath.relativize(classPath).toString())
     }
 
-    private static Collection<String> getClassNamesFromJar(File jarFile) {
-        return new ZipFile(jarFile).stream()
+    def getR2PreInflaterMapperFromJar = { File jarFile ->
+        new ZipFile(jarFile).stream()
                 .map { entry -> entry.name }
                 .filter { p -> p.endsWith(".class") }
                 .map { p -> collectClassPatch(p)}
@@ -109,7 +110,7 @@ class PreInflaterTransform extends Transform {
      * @param classBytes
      * @return
      */
-    private static byte[] injectMethod(byte[] classBytes) {
+    def injectMethod = { classBytes ->
         final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS)
         final PreInflaterClassVisitor visitor = new PreInflaterClassVisitor(writer, inflaters)
         final ClassReader reader = new ClassReader(classBytes)
@@ -126,8 +127,10 @@ class PreInflaterTransform extends Transform {
 
         File preInflaterJarFile = null
         boolean isPreInflaterJarFound = false
-        final Pattern taskManagerNamePattern = Pattern.compile('jarvis.com.preinflater:preinflater:(.*)')
-        final Predicate<String> isPreInflaterJar = { jarName -> jarName == ':library' || taskManagerNamePattern.matcher(jarName).matches() }
+        final Pattern preinflaterPattern = Pattern.compile('com.github.JarvisGG.PreInflater:library:(.*)')
+        final Predicate<String> isPreInflaterJar = {
+            jarName -> jarName == ':library' || preinflaterPattern.matcher(jarName).matches()
+        }
 
         invocation.referencedInputs.each { input ->
             input.directoryInputs.each { directoryInput ->
@@ -144,32 +147,19 @@ class PreInflaterTransform extends Transform {
                 final Path dirPath = directoryInput.file.toPath()
 
                 FileUtils.getAllFiles(directoryInput.file).stream()
-                        .map { f -> getClassNameFromFile(dirPath, f.toPath()) }
+                        .map { f -> getR2PreInflaterMapperFromFile(dirPath, f.toPath()) }
                         .collect()
 
-                final File outJarFile = outputProvider.getContentLocation(
-                        directoryInput.name,
-                        directoryInput.contentTypes,
-                        directoryInput.scopes,
-                        Format.DIRECTORY
-                )
-                FileUtils.copyDirectory(directoryInput.file, outJarFile)
+                injectAttachBaseContextClassFile(outputProvider, directoryInput)
             }
 
             input.jarInputs.each { jarInput ->
 
                 FileUtils.getAllFiles(jarInput.file).stream()
-                        .map { f -> getClassNamesFromJar(f) }
+                        .map { f -> getR2PreInflaterMapperFromJar(f) }
                         .collect()
 
-                final File outJarFile = outputProvider.getContentLocation(
-                        jarInput.name,
-                        jarInput.contentTypes,
-                        jarInput.scopes,
-                        Format.JAR
-                )
-                Files.createParentDirs(outJarFile)
-                FileUtils.copyFile(jarInput.file, outJarFile)
+                def outJarFile = injectAttachBaseContextClassJar(outputProvider, jarInput)
 
                 if (!isPreInflaterJarFound && isPreInflaterJar.test(jarInput.name)) {
                     preInflaterJarFile = outJarFile
@@ -178,31 +168,109 @@ class PreInflaterTransform extends Transform {
             }
         }
 
-
         if (isPreInflaterJarFound) {
-            File tmpFile = new File(project.buildDir, String.join(File.separatorChar.toString(), 'tmp', 'inflater', 'inflater-tmp.jar'))
-            Files.createParentDirs(tmpFile)
+            injectCollectMethod(preInflaterJarFile)
+        }
 
-            new ZipInputStream(new FileInputStream(preInflaterJarFile)).withCloseable { zis ->
-                new ZipOutputStream(new FileOutputStream(tmpFile)).withCloseable { zos ->
-                    ZipEntry entry
-                    while ((entry = zis.getNextEntry()) != null) {
-                        if (entry.name.endsWith('PreInflaterManager.class')) {
-                            byte[] modified = injectMethod(ByteStreams.toByteArray(zis))
-                            zos.putNextEntry(new ZipEntry(entry.name))
-                            zos.write(modified)
-                        } else {
-                            zos.putNextEntry(entry)
-                            ByteStreams.copy(zis, zos)
-                        }
-                        zos.closeEntry()
-                        zis.closeEntry()
+    }
+
+    def injectCollectMethod = { File preInflaterJarFile ->
+
+        File tmpFile = new File(project.buildDir, String.join(File.separatorChar.toString(), 'tmp', 'inflater', 'inflater-tmp.jar'))
+        Files.createParentDirs(tmpFile)
+
+        new ZipInputStream(new FileInputStream(preInflaterJarFile)).withCloseable { zis ->
+            new ZipOutputStream(new FileOutputStream(tmpFile)).withCloseable { zos ->
+                ZipEntry entry
+                while ((entry = zis.getNextEntry()) != null) {
+                    if (entry.name.endsWith('PreInflaterManager.class')) {
+
+                        zos.putNextEntry(new ZipEntry(entry.name))
+                        zos.write(injectMethod(ByteStreams.toByteArray(zis)))
+                    } else {
+                        zos.putNextEntry(entry)
+                        ByteStreams.copy(zis, zos)
                     }
+                    zos.closeEntry()
+                    zis.closeEntry()
                 }
             }
+        }
+        FileUtils.copyFile(tmpFile, preInflaterJarFile)
+        FileUtils.delete(tmpFile)
+    }
 
-            // 拷贝并覆盖原 Jar 包
-            Files.copy(tmpFile, preInflaterJarFile)
+    /**
+     * 替换 Activity attachBaseActivity 代码
+     */
+    def injectAttachBaseContextClassJar = { outputProvider, jarFile ->
+
+        File tmpFile = new File(project.buildDir, String.join(File.separatorChar.toString(), 'tmp', 'inflater', jarFile.file.name + '-tmp.jar'))
+        Files.createParentDirs(tmpFile)
+
+        new ZipInputStream(new FileInputStream(jarFile.file)).withCloseable { zis ->
+            new ZipOutputStream(new FileOutputStream(tmpFile)).withCloseable { zos ->
+                ZipEntry entry
+                while ((entry = zis.getNextEntry()) != null) {
+                    byte[] modified = injectClass(ByteStreams.toByteArray(zis))
+                    zos.putNextEntry(new ZipEntry(entry.name))
+                    zos.write(modified)
+//                  zos.putNextEntry(entry)
+//                  ByteStreams.copy(zis, zos)
+                    zos.closeEntry()
+                    zis.closeEntry()
+                }
+            }
+        }
+
+        def dest = outputProvider.getContentLocation(
+                jarFile.name,
+                jarFile.contentTypes,
+                jarFile.scopes,
+                Format.JAR
+        )
+        FileUtils.copyFile(tmpFile, dest)
+        FileUtils.delete(tmpFile)
+
+        return dest
+    }
+
+    def injectAttachBaseContextClassFile = { outputProvider, directoryInput ->
+
+        if (directoryInput.file.isDirectory()) {
+            directoryInput.file.eachFileRecurse { File file ->
+                if (file.isFile() && file.name == "MainActivity.class") {
+
+                    println("injectAttachBaseContextClassFile -------------> " + file.name)
+
+                    byte[] modified = injectClass(file.bytes)
+                    File destFile = new File(file.parentFile.absoluteFile, file.name)
+                    FileOutputStream fileOutputStream = new FileOutputStream(destFile)
+                    fileOutputStream.write(modified)
+                    fileOutputStream.close()
+
+                }
+            }
+        }
+
+        def dest = outputProvider.getContentLocation(
+                directoryInput.name,
+                directoryInput.contentTypes,
+                directoryInput.scopes,
+                Format.DIRECTORY
+        )
+        FileUtils.copyDirectory(directoryInput.file, dest)
+    }
+
+    def injectClass = { contents ->
+        try {
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS)
+            ClassVisitor visitor = new AnnotationClassVisitor(writer)
+            ClassReader reader = new ClassReader(contents)
+            reader.accept(visitor, ClassReader.EXPAND_FRAMES)
+            writer.toByteArray()
+        } catch (ignored) {
+            contents
         }
 
     }

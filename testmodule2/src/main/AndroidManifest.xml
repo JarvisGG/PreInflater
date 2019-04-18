@@ -1,2 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jarvis.com.testmodule2" />
+    package="jarvis.com.testmodule2" >
+
+    <application>
+        <activity android:name=".Module2FristActivity" />
+    </application>
+</manifest>

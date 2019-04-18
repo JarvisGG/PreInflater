@@ -1,8 +1,10 @@
 package jarvis.com.preinflater;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.support.annotation.LayoutRes;
 import android.support.v4.view.AsyncLayoutInflater;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -54,5 +56,17 @@ public class AsyncWrapperLayoutInflater {
         mViewPool.put(layoutRes, view);
 
         return view;
+    }
+
+    public Context wrapContext(Context newBase) {
+        Log.e("asm-execute -> ", " newBase !! ");
+        return new PreInflaterWrapper(newBase);
+    }
+
+    private static class PreInflaterWrapper extends ContextWrapper {
+
+        public PreInflaterWrapper(Context base) {
+            super(base);
+        }
     }
 }

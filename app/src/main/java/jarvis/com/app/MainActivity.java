@@ -1,5 +1,7 @@
 package jarvis.com.app;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.AsyncLayoutInflater;
@@ -16,7 +18,9 @@ import com.jarvis.android.preinflater.App$R2InflaterMapper;
 import jarvis.com.preinflater.AsyncWrapperLayoutInflater;
 import jarvis.com.preinflater.PreInflaterManager;
 import jarvis.com.preinflater.annotation.PreInflater;
+import jarvis.com.testmodule2.Module2FristActivity;
 
+@PreInflater(layout = R2.layout.activity_main, scheduler = "io")
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -24,10 +28,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        View view = AsyncWrapperLayoutInflater.getInstance(this).inflater(R.layout.activity_first);
+
+        Log.e("preinflater --> ", view.toString());
+
         findViewById(R.id.preinflater).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PreInflaterManager.$.init(MainActivity.this);
+
             }
         });
 
@@ -38,8 +46,16 @@ public class MainActivity extends AppCompatActivity {
                 test2();
             }
         });
-    }
 
+        findViewById(R.id.jump_module_activity2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, Module2FristActivity.class);
+                startActivity(intent);
+            }
+
+        });
+    }
 
     private void test1() {
         long startTime = System.currentTimeMillis();
@@ -51,5 +67,9 @@ public class MainActivity extends AppCompatActivity {
         long startTime = System.currentTimeMillis();
         LayoutInflater.from(this).inflate(R.layout.activity_first, null, false);
         Log.e("preInflater", " ------------------> " + (System.currentTimeMillis() - startTime));
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,20 +10,24 @@
         android:id="@+id/preinflater"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inflater !!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="200dp"
+        android:text="Inflater !!"/>
 
     <Button
         android:id="@+id/test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Test !!"
-        app:layout_constraintTop_toBottomOf="@id/preinflater"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        android:layout_marginTop="300dp"
+        android:layout_gravity="center_horizontal" />
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/jump_module_activity2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="jump_module_activity2 !!"
+        android:layout_marginTop="400dp"
+        android:layout_gravity="center_horizontal" />
+
+</FrameLayout>

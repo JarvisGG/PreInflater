@@ -1,2 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jarvis.com.testmodule3" />
+    package="jarvis.com.testmodule3" >
+
+    <application>
+        <activity android:name=".Module3FristActivity" />
+    </application>
+</manifest>

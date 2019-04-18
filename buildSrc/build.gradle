@@ -1,17 +1,20 @@
 apply plugin: 'groovy'
 apply plugin: 'com.github.dcendents.android-maven'
 
+repositories {
+    google()
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     compile gradleApi()     // gradle sdk
     compile localGroovy()   // groovy sdk
     implementation 'com.android.tools.build:gradle:3.3.2'
     implementation 'org.ow2.asm:asm-all:5.1'
-}
 
-repositories {
-    google()
-    jcenter()
+    compile 'com.github.JarvisGG.PreInflater:annotation:1.0.1-SNAPSHORT'
 }
 
 buildscript {
