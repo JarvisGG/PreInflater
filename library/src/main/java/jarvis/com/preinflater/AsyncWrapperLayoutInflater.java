@@ -30,6 +30,8 @@ public class AsyncWrapperLayoutInflater {
 
     private final HashMap<Integer, View> mViewPool = new HashMap<>();
 
+    private boolean isSetPrivateFactory = false;
+
 
     public static AsyncWrapperLayoutInflater getInstance(Context context) {
         if (sInstance == null) {
@@ -52,6 +54,7 @@ public class AsyncWrapperLayoutInflater {
     }
 
     public View inflater(@LayoutRes int layoutRes) {
+
 
         View view = mViewPool.get(layoutRes);
         if (view != null) {
@@ -114,14 +117,13 @@ public class AsyncWrapperLayoutInflater {
             super.setFactory2(factory);
             original.setFactory2(factory);
 
-            if ((getContext() instanceof Factory2)) {
-                forceSetPrivateFactory(original, (Factory2) getContext());
+            if (getContext() instanceof Factory2) {
+                setPrivateFactoryInternal(original, (Factory2) getContext());
             }
         }
 
         @Override
         public View inflate(int resource, @Nullable ViewGroup root, boolean attachToRoot) {
-
 
             View view = mViewPool.get(resource);
             if (view != null) {
@@ -140,48 +142,70 @@ public class AsyncWrapperLayoutInflater {
     }
 
 
-    private static Field sPrivateFactoryField;
-    private static boolean sCheckedPrivateFactoryField;
-
-    private static void forceSetPrivateFactory(LayoutInflater inflater, LayoutInflater.Factory2 factory) {
-        if (!sCheckedPrivateFactoryField) {
-            try {
-                sPrivateFactoryField = LayoutInflater.class.getDeclaredField("mPrivateFactory");
-                sPrivateFactoryField.setAccessible(true);
-            } catch (NoSuchFieldException e) {
-            }
-            sCheckedPrivateFactoryField = true;
+    /**
+     * used to inflater fragment, so use activity getContext -> factory
+     *
+     * https://helw.net/2018/08/06/appcompat-view-inflation/
+     *
+     * part of createViewFromTag tries to get the view from the factory, and,
+     * upon not finding it, falls back to mPrivateFactory, and finally falling
+     * back to trying to create the class that the tag refers to. mPrivateFactory
+     * is set by Activity in its constructor. (Interestingly enough, it is
+     * this mPrivateFactory that is responsible for inflating fragments as seen here).
+     *
+     * @param inflater
+     * @param factory
+     */
+    private void setPrivateFactoryInternal(LayoutInflater inflater, LayoutInflater.Factory2 factory) {
+        if (isSetPrivateFactory) {
+            return;
         }
-        if (sPrivateFactoryField != null) {
+
+        Field privateFactory = null;
+
+        try {
+            privateFactory = LayoutInflater.class.getDeclaredField("mPrivateFactory");
+            privateFactory.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        if (privateFactory != null) {
             try {
-                LayoutInflater.Factory2 origin = (LayoutInflater.Factory2) sPrivateFactoryField.get(inflater);
+                LayoutInflater.Factory2 origin = (LayoutInflater.Factory2) privateFactory.get(inflater);
                 if (origin == null) {
-                    sPrivateFactoryField.set(inflater, factory);
+                    privateFactory.set(inflater, factory);
                 } else {
-                    sPrivateFactoryField.set(inflater, new LayoutInflater.Factory2() {
-
-                        @Override
-                        public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-                            View view = factory.onCreateView(parent, name, context, attrs);
-                            if (view != null) {
-                                return view;
-                            }
-                            return origin.onCreateView(parent, name, context, attrs);
-                        }
-
-                        @Override
-                        public View onCreateView(String name, Context context, AttributeSet attrs) {
-                            View view = factory.onCreateView(name, context, attrs);
-                            if (view != null) {
-                                return view;
-                            }
-                            return origin.onCreateView(name, context, attrs);
-                        }
-                    });
+                    privateFactory.set(inflater, new PrivateWrapperFactory2(factory, origin));
                 }
-
             } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
+        }
+
+        isSetPrivateFactory = true;
+    }
+
+    private class PrivateWrapperFactory2 implements LayoutInflater.Factory2 {
+
+        LayoutInflater.Factory2 factory2;
+        LayoutInflater.Factory2 origin;
+
+        PrivateWrapperFactory2(LayoutInflater.Factory2 factory2, LayoutInflater.Factory2 origin) {
+            this.factory2 = factory2;
+            this.origin = origin;
+        }
+
+        @Override
+        public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+            View view = factory2.onCreateView(parent, name, context, attrs);
+            return view == null ? origin.onCreateView(parent, name, context, attrs) : view;
+        }
+
+        @Override
+        public View onCreateView(String name, Context context, AttributeSet attrs) {
+            View view = factory2.onCreateView(name, context, attrs);
+            return view == null ? origin.onCreateView(name, context, attrs) : view;
         }
     }
 }
