@@ -239,16 +239,12 @@ class PreInflaterTransform extends Transform {
 
         if (directoryInput.file.isDirectory()) {
             directoryInput.file.eachFileRecurse { File file ->
-                if (file.isFile() && file.name == "MainActivity.class") {
-
-                    println("injectAttachBaseContextClassFile -------------> " + file.name)
-
+                if (file.isFile()) {
                     byte[] modified = injectClass(file.bytes)
                     File destFile = new File(file.parentFile.absoluteFile, file.name)
                     FileOutputStream fileOutputStream = new FileOutputStream(destFile)
                     fileOutputStream.write(modified)
                     fileOutputStream.close()
-
                 }
             }
         }
