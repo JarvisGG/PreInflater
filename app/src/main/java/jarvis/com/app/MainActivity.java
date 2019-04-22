@@ -28,14 +28,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        View view = AsyncWrapperLayoutInflater.getInstance(this).inflater(R.layout.activity_first);
-
-        Log.e("preinflater --> ", view.toString());
-
         findViewById(R.id.preinflater).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                PreInflaterManager.$.init(MainActivity.this);
             }
         });
 
@@ -60,13 +56,13 @@ public class MainActivity extends AppCompatActivity {
     private void test1() {
         long startTime = System.currentTimeMillis();
         AsyncWrapperLayoutInflater.getInstance(this).inflater(R.layout.activity_first);
-        Log.e("preInflater", " ------------------> " + (System.currentTimeMillis() - startTime));
+        Log.e("preInflater", "test1 ------------------> " + (System.currentTimeMillis() - startTime));
     }
 
     private void test2() {
         long startTime = System.currentTimeMillis();
         LayoutInflater.from(this).inflate(R.layout.activity_first, null, false);
-        Log.e("preInflater", " ------------------> " + (System.currentTimeMillis() - startTime));
+        Log.e("preInflater", " test2------------------> " + (System.currentTimeMillis() - startTime));
     }
 
     @Override

@@ -1,12 +1,10 @@
 package jarvis.com.testmodule2;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import jarvis.com.preinflater.AsyncWrapperLayoutInflater;
 import jarvis.com.preinflater.annotation.PreInflater;
 
 /**
@@ -19,7 +17,7 @@ public class Module2FristActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(AsyncWrapperLayoutInflater.getInstance(this).inflater(R.layout.activity_module_2_frist));
+        setContentView(R.layout.activity_module_2_frist);
     }
 
     @Override
