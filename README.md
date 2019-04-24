@@ -71,7 +71,7 @@ android {
     // ...
 }
 ```
-假如希望对当前 Activity 的加载布局都可以使用预加载，需要在 Activity 加一个 空方法
+假如希望对当前 Activity 的加载布局都可以使用预加载，需要在 Activity 加一个 空方法，preinflater-plugin 插件会帮你 hook 这个方法，并替换你的 LayoutInflater
 
 ``` Java
 @Override
