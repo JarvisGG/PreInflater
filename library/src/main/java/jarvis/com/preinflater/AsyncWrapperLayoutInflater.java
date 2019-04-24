@@ -68,7 +68,6 @@ public class AsyncWrapperLayoutInflater {
     }
 
     public Context wrapContext(Context newBase) {
-        Log.e("asm-execute -> ", " newBase !! ");
         return new PreInflaterWrapper(newBase);
     }
 
@@ -127,7 +126,6 @@ public class AsyncWrapperLayoutInflater {
 
             View view = mViewPool.get(resource);
             if (view != null) {
-                Log.e("asm-resource -> ", resource + " !! ");
                 if (root != null && attachToRoot) {
                     root.addView(view);
                 }
