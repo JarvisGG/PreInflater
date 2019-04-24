@@ -1,4 +1,4 @@
-# PreInflater
+PreInflater
 ===========================
 [![](https://jitpack.io/v/JarvisGG/PreInflater.svg)](https://jitpack.io/#JarvisGG/PreInflater)
 ![Platform](https://img.shields.io/badge/platform-android-blue.svg)
