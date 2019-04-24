@@ -1,6 +1,20 @@
 # PreInflater
-:8ball: Android 性能优化：布局预加载，提前 AsyncInflater Layout，用于提升布局加载速度
-目前还是 alpha 版本，还在开发阶段
+===========================
+[![](https://jitpack.io/v/JarvisGG/PreInflater.svg)](https://jitpack.io/#JarvisGG/PreInflater)
+![Platform](https://img.shields.io/badge/platform-android-blue.svg)
+![SDK](https://img.shields.io/badge/SDK-12%2B-blue.svg)
+[![](https://img.shields.io/badge/Author-JarvisGG-7AD6FD.svg)](http:\//jarvisgg.github.io/)
+
+Android 性能优化：布局预加载，提前 AsyncInflater Layout，用于提升布局加载速度
+
+****
+	
+|Author|Jarvis|
+|---|---
+|E-mail|yang4130qq@gmail.com
+
+
+****
 
 ### Usage
 Step 1:
@@ -32,16 +46,16 @@ repositories {
 }
 
 dependencies {
-    api 'com.github.JarvisGG.PreInflater:annotation:1.0.1-SNAPSHORT'
-    annotationProcessor 'com.github.JarvisGG.PreInflater:compiler:1.0.1-SNAPSHORT'
+    api 'com.github.JarvisGG.PreInflater:annotation:1.0.2-SNAPSHORT'
+    annotationProcessor 'com.github.JarvisGG.PreInflater:compiler:1.0.2-SNAPSHORT'
     
-    api 'com.github.JarvisGG.PreInflater:library:1.0.1-SNAPSHORT'
+    api 'com.github.JarvisGG.PreInflater:library:1.0.2-SNAPSHORT'
 }
 
 ```
 
 Step3:
-``` xml
+``` XML
 android {
     // ...
     defaultConfig {
@@ -57,3 +71,20 @@ android {
     // ...
 }
 ```
+假如希望对当前 Activity 的加载布局都可以使用预加载，需要在 Activity 加一个 空方法
+
+``` Java
+@Override
+protected void attachBaseContext(Context newBase) {
+}
+```
+
+> Tip
+>> star star star ！！！！:blush:
+
+### LICENSE
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/License_icon-mit-88x31-2.svg/128px-License_icon-mit-88x31-2.svg.png)
+
+This library is under the MIT license. check the [LICENSE](https://opensource.org/licenses/MIT) file for more detail.
+
+Copyright (c) 2019 Jarvis
